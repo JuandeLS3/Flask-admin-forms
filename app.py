@@ -1,6 +1,3 @@
-# coding=utf-8
-
-# Sin el coding me saltaba un error...
 import os
 import os.path as op
 
@@ -15,13 +12,17 @@ from flask_admin.form import rules
 from flask_admin.contrib import sqla
 
 
-# Create app
+# Create application
 app = Flask(__name__, static_folder='files')
 
-# Clave secreta ficticia para que se puedan usar sesiones..
+
+# set flask admin swatch
+app.config['FLASK_ADMIN_SWATCH'] = 'cerulean'
+
+# Create dummy secrey key so we can use sessions
 app.config['SECRET_KEY'] = '123456790'
 
-# Create in-memory database (sqlite)
+# Create in-memory database
 app.config['DATABASE_FILE'] = 'sample_db.sqlite'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + app.config['DATABASE_FILE']
 app.config['SQLALCHEMY_ECHO'] = True
@@ -65,26 +66,27 @@ class User(db.Model):
     notes = db.Column(db.UnicodeText)
 
 
+# Delete hooks for models, delete files if models are getting deleted
 @listens_for(File, 'after_delete')
 def del_file(mapper, connection, target):
     if target.path:
         try:
             os.remove(op.join(file_path, target.path))
         except OSError:
-            # Error que salta cuando se elimina algo que no existe
+            # Don't care if was not deleted because it does not exist
             pass
 
 
 @listens_for(Image, 'after_delete')
 def del_image(mapper, connection, target):
     if target.path:
-        # Eliminar imagenes
+        # Delete image
         try:
             os.remove(op.join(file_path, target.path))
         except OSError:
             pass
 
-        # Eliminar miniaturas
+        # Delete thumbnail
         try:
             os.remove(op.join(file_path,
                               form.thumbgen_filename(target.path)))
@@ -92,14 +94,14 @@ def del_image(mapper, connection, target):
             pass
 
 
-# Administración de las vistas
+# Administrative views
 class FileView(sqla.ModelView):
-    # Anular campo de formulario para usar Flask-Admin FileUploadField
+    # Override form field to use Flask-Admin FileUploadField
     form_overrides = {
         'path': form.FileUploadField
     }
 
-    # Pasar parámetros adicionales a 'ruta' al constructor FileUploadField
+    # Pass additional parameters to 'path' to FileUploadField constructor
     form_args = {
         'path': {
             'label': 'File',
@@ -121,7 +123,8 @@ class ImageView(sqla.ModelView):
         'path': _list_thumbnail
     }
 
-    # En este caso, Flask-Admin no intentará fusionar varios parámetros para el campo.
+    # Alternative way to contribute field is to override it completely.
+    # In this case, Flask-Admin won't attempt to merge various parameters for the field.
     form_extra_fields = {
         'path': form.ImageUploadField('Image',
                                       base_path=file_path,
@@ -131,16 +134,17 @@ class ImageView(sqla.ModelView):
 
 class UserView(sqla.ModelView):
     """
-    Esta clase demuestra el uso de 'reglas' para controlar la representación de formularios.
+    This class demonstrates the use of 'rules' for controlling the rendering of forms.
     """
     form_create_rules = [
-        # Header y los 4 campos..
+        # Header and four fields. Email field will go above phone field.
         rules.FieldSet(('first_name', 'last_name', 'email', 'phone'), 'Personal'),
-        # Separando headr y campos
+        # Separate header and few fields
         rules.Header('Location'),
         rules.Field('city'),
+        # String is resolved to form field, so there's no need to explicitly use `rules.Field`
         'country',
-        # Mostrar macro de Flask-Admin lib.html (se incluye con el prefijo 'lib')
+        # Show macro from Flask-Admin lib.html (it is included with 'lib' prefix)
         rules.Container('rule_demo.wrap', rules.Field('notes'))
     ]
 
@@ -154,20 +158,20 @@ class UserView(sqla.ModelView):
 # Flask views
 @app.route('/')
 def index():
-    return '<a href="/admin/">Clic para entrar en administración</a>'
+    return '<a href="/admin/">Click me to get to Admin!</a>'
 
-# Aquí se crea el administrador
-admin = Admin(app, 'Ejemplo: formularios', template_mode='bootstrap3')
+# Create admin
+admin = Admin(app, 'Example: Bootswatch', template_mode='bootstrap3')
 
-# Se añaden las vistas
-admin.add_view(FileView(File, db.session, name='Ficheros'))
-admin.add_view(ImageView(Image, db.session, name='Imagenes'))
-admin.add_view(UserView(User, db.session, name='Usuarios'))
+# Add views
+admin.add_view(FileView(File, db.session))
+admin.add_view(ImageView(Image, db.session))
+admin.add_view(UserView(User, db.session, name='User'))
 
 
 def build_sample_db():
     """
-    Se introducirán algunos datos de ejemplo en la bd
+    Populate a small db with some example entries.
     """
 
     import random
@@ -177,14 +181,14 @@ def build_sample_db():
     db.create_all()
 
     first_names = [
-        'Juan', 'Pepe', 'Paulino', 'Javier', 'Cristian', 'Fran','Sofia', 'Marina',
-        'Pepito', 'Popo', 'Paulo', 'Pinpon', 'Evaristo', 'Isla', 'Alfie', 'Olivia', 'Jessica',
-        'Riley', 'William', 'James', 'Jeffry', 'Jessica', 'Fredy', 'Amanda', 'Lucy'
+        'Harry', 'Amelia', 'Oliver', 'Jack', 'Isabella', 'Charlie','Sophie', 'Mia',
+        'Jacob', 'Thomas', 'Emily', 'Lily', 'Ava', 'Isla', 'Alfie', 'Olivia', 'Jessica',
+        'Riley', 'William', 'James', 'Geoffrey', 'Lisa', 'Benjamin', 'Stacey', 'Lucy'
     ]
     last_names = [
-        'Delgado', 'DeJuan', 'Huertas', 'Jimenez', 'DelosSantos', 'Alcon', 'Taylor', 'Thomas',
+        'Brown', 'Smith', 'Patel', 'Jones', 'Williams', 'Johnson', 'Taylor', 'Thomas',
         'Roberts', 'Khan', 'Lewis', 'Jackson', 'Clarke', 'James', 'Phillips', 'Wilson',
-        'Ali', 'Mason', 'Mitchell', 'Rose', 'Davis', 'Davies', 'Jerbi', 'Cox', 'Alexander'
+        'Ali', 'Mason', 'Mitchell', 'Rose', 'Davis', 'Davies', 'Rodriguez', 'Cox', 'Alexander'
     ]
     locations = [
         ("Shanghai", "China"),
@@ -218,14 +222,13 @@ def build_sample_db():
         user = User()
         user.first_name = first_names[i]
         user.last_name = last_names[i]
-        user.email = user.first_name.lower() + "@gmail.com"
+        user.email = user.first_name.lower() + "@example.com"
         tmp = ''.join(random.choice(string.digits) for i in range(10))
         user.phone = "(" + tmp[0:3] + ") " + tmp[3:6] + " " + tmp[6::]
         user.city = locations[i][0]
         user.country = locations[i][1]
         db.session.add(user)
 
-    # De aquí se cogen las imágenes y files
     images = ["Buffalo", "Elephant", "Leopard", "Lion", "Rhino"]
     for name in images:
         image = Image()
@@ -244,11 +247,11 @@ def build_sample_db():
 
 if __name__ == '__main__':
 
-    # Se realiza la build de la bd si no existe ya una
+    # Build a sample db on the fly, if one does not exist yet.
     app_dir = op.realpath(os.path.dirname(__file__))
     database_path = op.join(app_dir, app.config['DATABASE_FILE'])
     if not os.path.exists(database_path):
         build_sample_db()
 
-    # Se lanza la app
-    app.run(debug=True)
+    # Start app
+    app.run(debug=True, use_reloader=True)
