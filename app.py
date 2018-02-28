@@ -160,9 +160,9 @@ def index():
 admin = Admin(app, 'Ejemplo: formularios', template_mode='bootstrap3')
 
 # Se añaden las vistas
-admin.add_view(FileView(File, db.session))
-admin.add_view(ImageView(Image, db.session))
-admin.add_view(UserView(User, db.session, name='User'))
+admin.add_view(FileView(File, db.session, name='Ficheros'))
+admin.add_view(ImageView(Image, db.session, name='Imagenes'))
+admin.add_view(UserView(User, db.session, name='Usuarios'))
 
 
 def build_sample_db():
