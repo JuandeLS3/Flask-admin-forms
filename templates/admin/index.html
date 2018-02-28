@@ -1,0 +1,21 @@
+{% extends 'admin/master.html' %}
+{% block body %}
+{{ super() }}
+<div class="container">
+    <div class="row">
+        <div class="col-sm-10 col-sm-offset-1">
+            <h1>Uso de Flask-Admin</h1>
+            <p class="lead">
+                Define tus propios formularios personalizados.
+            </p>
+            <p>
+                Este ejemplo muestra como con flask-admin puedes personalizar tus propios formularios mediante reglas. Puedes realizar CRUD en la base de datos sqlite que se usa de ejemplo mediante estos formularios.
+            </p>
+            <p>
+                También se puede realizar CRUD en ficheros.
+            </p>
+            <a class="btn btn-primary" href="/"><i class="glyphicon glyphicon-chevron-left"></i> Atrás</a>
+        </div>
+    </div>
+</div>
+{% endblock body %}
