@@ -35,4 +35,4 @@ The first time you run this example, **a sample sqlite database gets populated a
 
 ## License
 
-This project is licensed under the Apache 2.0 - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the Apache 2.0 - see the [LICENSE](https://github.com/JuandeLS3/Flask-admin-forms/blob/master/LICENSE "LICENSE") file for details
