@@ -5,6 +5,17 @@ This example shows how you can define your own custom forms by using form render
 ## Simple CRUD
 This example can perform insert, edit and delete operations.
 
+## Tag versions
+To change the version for example, to the swatch3 version perform the following command
+
+		git checkout swatch3
+
+Before you can check out a different revision, **you will need to revert the files to their original state.**
+The easiest way to do this is with the git reset command.
+
+		git reset --hard
+
+
 ## To run this example
 Clone the repository.
 
